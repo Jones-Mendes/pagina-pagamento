@@ -12,12 +12,19 @@ export default function App() {
   const [cvv, setCvv] = useState(0);
   const [senha, setSenha] = useState("");
 
+  function formatNumero(evento){
+    let numero = evento.target.value
+    let numeroFormatado = numero.replace(/\D/g, '') // Remove tudo que não for número
+    numeroFormatado = numeroFormatado.substring(0, 16) // Limita a 16 Dígitos
+    numeroFormatado = numeroFormatado.replace(/(\d{4})/g, '$1 ').trim() // Adiciona espaço a cada 4 dígitos
+    setNumero(numeroFormatado)
+  }
   async function pagar(){
     if(!nome || !numero || !mes || !ano || !cvv || !senha){
       return toast.error("Preencha todos os campos")
     }
 
-    if(numero.length !==16){
+    if(numero.replace(/\s/g, '').length !==16){
       return toast.error("Número do cartão inválido")
     }
 
@@ -35,9 +42,10 @@ export default function App() {
       return toast.error("Senha inválida")
     }
     try{
+
       const response = await instance.post("/creditcards",{
         name: nome,
-        number: numero,
+        number: numero.replace(/\s/g, ''),
         expiration: `${mes}/${ano}`,
         cvv: cvv,
         password: senha
@@ -59,10 +67,10 @@ export default function App() {
       />
       <div className="w-[40%] relative h-full bg-[#271540]">
         <div className="absolute top-10 left-60">
-          <CardFront />
+          <CardFront nome ={nome} numero={numero}/>
         </div>
         <div className="absolute top-[400px] left-[300px]">
-          <BackCard />
+          <BackCard cvv={cvv}/>
         </div>
       </div>
       <div className="w-[60%] h-full flex items-end p-[40px] flex-col">
@@ -85,7 +93,8 @@ export default function App() {
               Número do cartão
             </label>
             <input
-              onChange={(event) => setNumero(event.target.value)}
+              onChange={(event) => formatNumero(event)}
+              value={numero}
               type="text"
               className="w-full h-[40px] rounded-md bg-[#D9D9D9]"
             />
